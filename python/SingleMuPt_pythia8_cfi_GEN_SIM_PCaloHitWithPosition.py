@@ -47,9 +47,12 @@ options.maxEvents = 2
 options.parseArguments()
 
 
-from Configuration.Eras.Era_Phase2C8_timing_layer_bar_cff import Phase2C8_timing_layer_bar
+# from Configuration.Eras.Era_Phase2C8_timing_layer_bar_cff import Phase2C8_timing_layer_bar
+# process = cms.Process('SIM',Phase2C8_timing_layer_bar)
 
-process = cms.Process('SIM',Phase2C8_timing_layer_bar)
+from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
+process = cms.Process('SIM',Phase2C8)
+
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -72,39 +75,6 @@ from IOMC.RandomEngine.RandomServiceHelper import RandomNumberServiceHelper
 randHelper = RandomNumberServiceHelper(process.RandomNumberGeneratorService)
 randHelper.resetSeeds(options.seed)
 
-# process.MessageLogger = cms.Service(
-#     "MessageLogger",
-#     destinations = cms.untracked.vstring('cout'),
-#     categories = cms.untracked.vstring('CaloSD'),
-#     debugModules = cms.untracked.vstring('*'),
-#     cout = cms.untracked.PSet(
-#         threshold =  cms.untracked.string('DEBUG'),
-#         INFO =  cms.untracked.int32(0),
-#         DEBUG = cms.untracked.int32(0),
-#         CaloSD = cms.untracked.int32(10000000)
-#         )
-#     )
-
-# # process.MessageLogger.cerr.FwkReport.reportEvery = 1
-# process.MessageLogger = cms.Service("MessageLogger",
-#     destinations   = cms.untracked.vstring('cerr'),
-#     cerr = cms.untracked.PSet(
-#         threshold = cms.untracked.string('INFO'),
-#         # default = cms.untracked.PSet(                   
-#         #     limit = cms.untracked.int32(-1)
-#         #     )
-#         ),
-#     # debugModules = cms.untracked.vstring(
-#     #     '*'
-#     #     # 'g4SimHits'
-#     #     # 'CaloSim'
-#     #     ),
-#     categories = cms.untracked.vstring('CaloSim'),
-#     # detailedInfo = cms.untracked.PSet(
-#     #     eventNumber = cms.untracked.PSet(reportEvery = cms.untracked.int32(100))
-#     #     ),
-#     )
-
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
@@ -122,6 +92,7 @@ else:
         )
 
 # Options for saving fine hits
+process.g4SimHits.CaloSD.UseFineCaloID = cms.bool(True)
 process.g4SimHits.DoFineCalo = cms.bool(True)
 process.g4SimHits.CaloTrkProcessing.EminFineTrack = cms.double(options.EminFineTrack)
 process.g4SimHits.CaloTrkProcessing.EminFinePhoton = cms.double(options.EminFinePhoton)
