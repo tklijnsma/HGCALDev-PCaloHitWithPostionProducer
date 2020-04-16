@@ -179,10 +179,14 @@ process.generator = cms.EDFilter("Pythia8PtGun",
     )
 
 process.PCaloHitWithPositionProducer = cms.EDProducer("PCaloHitWithPositionProducer")
-
-process.FEVTDEBUGoutput.outputCommands.append(
-    'keep *_PCaloHitWithPositionProducer_*_*'
-    )
+process.FEVTDEBUGoutput.outputCommands.extend([
+    'drop *',
+    'keep *_PCaloHitWithPositionProducer_*_*',
+    'keep SimTracks_*_*_*',
+    'keep SimVertexs_*_*_*',
+    'keep *_genParticles_*_*',
+    'keep recoGenMETs_*_*_*',
+    ])
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)

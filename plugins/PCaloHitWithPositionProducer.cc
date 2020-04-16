@@ -51,55 +51,32 @@ void PCaloHitWithPositionProducer::beginRun(const edm::Run&, const edm::EventSet
 void PCaloHitWithPositionProducer::produce(edm::Event& iEvent, const edm::EventSetup&) {  
     std::unique_ptr< std::vector< PCaloHitWithPosition >> hitsWithPositions( new std::vector<PCaloHitWithPosition> );
     hgcalRecHitToolInstance_.getEvent(iEvent);
-
     std::vector<edm::EDGetTokenT<edm::View<PCaloHit>>> tokens = {
         hgcalEEHitsToken_,
         hgcalHEfrontHitsToken_,
         hgcalHEbackHitsToken_
         };
-
     for (edm::EDGetTokenT<edm::View<PCaloHit>> token : tokens ) {
         edm::Handle< edm::View<PCaloHit> > handle;
         iEvent.getByToken(token, handle);
-
         for (auto const & hit : handle->ptrs() ) {
-            PCaloHitWithPosition hitWithPosition = PCaloHitWithPosition();
-            hitWithPosition.setVars(&(*hit), &hgcalRecHitToolInstance_);
-            hitsWithPositions->push_back(std::move(hitWithPosition));
+            if (hit->geantTrackId() == 0){
+                std::cout
+                    << "Hit " << hit->id()
+                    << " has track id " << hit->geantTrackId()
+                    << std::endl
+                    ;
+                }
+            DetId id = hit->id();
+            if (id.det() == DetId::HGCalEE || id.det() == DetId::HGCalHSi || id.det() == DetId::HGCalHSc){
+                PCaloHitWithPosition hitWithPosition = PCaloHitWithPosition();
+                hitWithPosition.setVars(&(*hit), &hgcalRecHitToolInstance_);
+                hitsWithPositions->push_back(std::move(hitWithPosition));
+                }
             }
         }
 
-
-    // edm::Handle< edm::View<PCaloHit> > hgcalHitsHandle;
-    // iEvent.getByToken(hgcalHitsToken_, hgcalHitsHandle);
-
-
-    // // for (auto const& hgcalHit : *(hgcalHitsHandle.product())) {
-    // // for (auto const & hgcalHit : *hgcalHitsHandle) {
-    // for (auto const & hgcalHit : hgcalHitsHandle->ptrs() ) {
-    //     PCaloHitWithPosition hitWithPosition = PCaloHitWithPosition();
-    //     hitWithPosition.setVars(&(*hgcalHit), &hgcalRecHitToolInstance_);
-    //     hitsWithPositions->push_back(std::move(hitWithPosition));
-    //     // std::cout << "Making DetId for hit\n";
-    //     // DetId detId(hgcalHit->id());
-    //     // std::cout << "Determining det of hit\n";
-    //     // DetId::Detector det = detId.det();
-    //     // if( det == DetId::HGCalEE ){
-    //     //     std::cout << "Hit is HGCalEE\n";
-    //     //     PCaloHitWithPosition hitWithPosition = PCaloHitWithPosition(hgcalHit);
-    //     //     hitWithPosition.setPositionVars(&hgcalRecHitToolInstance_);
-    //     //     hitsWithPositions->push_back(std::move(hitWithPosition));
-    //     //     std::cout << "Created new PCaloHitWithPosition\n";            
-    //     //     }
-    //     // else {
-    //     //     std::cout << "Hit is NOT HGCalEE\n";
-    //     //     }
-    //     }
-
-    // Put the output back in the event
     iEvent.put(std::move(hitsWithPositions));
     }
 
-
-//define this as a plug-in
 DEFINE_FWK_MODULE(PCaloHitWithPositionProducer);
