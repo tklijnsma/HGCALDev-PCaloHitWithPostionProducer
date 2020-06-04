@@ -35,13 +35,6 @@ options.register(
     VarParsing.varType.int,
     "Generator seed"
     )
-options.register(
-    'firstEvent',
-    0,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.int,
-    "Helpful to skip the first firstEvent-1 events"
-    )
 options.outputFile = 'hgcalhistoryntuple.root'
 options.maxEvents = 2
 options.parseArguments()
@@ -81,15 +74,9 @@ process.maxEvents = cms.untracked.PSet(
     )
 
 # Input source
-if options.firstEvent > 0:
-    process.source = cms.Source(
-        "EmptySource",
-        firstEvent = cms.untracked.uint32(9)
-        )
-else:
-    process.source = cms.Source(
-        "EmptySource",
-        )
+process.source = cms.Source(
+    "EmptySource",
+    )
 
 # Options for saving fine hits
 process.g4SimHits.CaloSD.UseFineCaloID = cms.bool(True)
