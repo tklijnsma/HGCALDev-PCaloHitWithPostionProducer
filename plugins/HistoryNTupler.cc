@@ -57,6 +57,7 @@ struct Hits{
     vector<float> emFraction_;
     vector<float> time_;
     vector<int> trackId_;
+    vector<int> fineTrackId_;
     vector<int> depth_;
     
     void linkToTree(TTree* tree, std::string name){
@@ -84,6 +85,7 @@ struct Hits{
         tree->Branch((name + "_emFraction").c_str(), "vector<float>", &emFraction_, 32000, 0);
         tree->Branch((name + "_time").c_str(), "vector<float>", &time_, 32000, 0);
         tree->Branch((name + "_trackId").c_str(), "vector<int>", &trackId_, 32000, 0);
+        tree->Branch((name + "_fineTrackId").c_str(), "vector<int>", &fineTrackId_, 32000, 0);
         tree->Branch((name + "_depth").c_str(), "vector<int>", &depth_, 32000, 0);
         }
 
@@ -112,6 +114,7 @@ struct Hits{
         emFraction_.push_back(hit.energyEM() / hit.energy());
         time_.push_back(hit.time());
         trackId_.push_back(hit.geantTrackId());
+        fineTrackId_.push_back(hit.geantFineTrackId());
         depth_.push_back(hit.depth());
         }
     };
