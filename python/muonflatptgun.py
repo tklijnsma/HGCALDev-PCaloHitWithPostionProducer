@@ -8,22 +8,29 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing("analysis")
 options.register(
-    'MuonPt',
+    'pt',
     10000.,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.float,
     "Energy in MeV used for the muon gun"
     )
 options.register(
+    'eminfine',
+    10.0,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.float,
+    "fixme"
+    )
+options.register(
     'EminFineTrack',
-    .5,
+    1.0,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.float,
     "Minimum energy in MeV for which secondary tracks in Calo will be saved"
     )
 options.register(
     'EminFinePhoton',
-    .5,
+    1.0,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.float,
     "Minimum energy in MeV for which secondary photons in Calo will be saved"
@@ -57,39 +64,79 @@ options.register(
     "If set to True, does a pion instead of a muon"
     )
 options.register(
-    'SaveAllTracks',
+    'storeAllTracksCalo',
     False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
-    "If set to True, saves ALL Geant tracks in Calorimeters"
+    "If set to True, stores ALL Geant tracks in Calorimeters"
+    )
+options.register(
+    'dofinecalo',
+    True,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Flag to control whether to activate fineCalo or not"
+    )
+options.register(
+    'rundigi',
+    False,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    "Flag to control whether to run the digi steps"
     )
 options.outputFile = 'test.root'
-options.maxEvents = 2
+options.maxEvents = 1
 options.parseArguments()
 
 
 # from Configuration.Eras.Era_Phase2C8_timing_layer_bar_cff import Phase2C8_timing_layer_bar
 # process = cms.Process('SIM',Phase2C8_timing_layer_bar)
 
-from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
-process = cms.Process('SIM',Phase2C8)
+# from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
+# process = cms.Process('SIM',Phase2C8)
 
-
-# import of standard configurations
+from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
+process = cms.Process('SIM',Phase2C9)
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D41_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D49_cff')
+process.load("SimGeneral.MixingModule.mixNoPU_cfi")
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
-process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC_cfi')
+process.load('Configuration.StandardSequences.VtxSmearedNoSmear_cff')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
+process.load('Configuration.StandardSequences.Digi_cff')
+process.load('Configuration.StandardSequences.SimL1Emulator_cff')
+process.load('Configuration.StandardSequences.L1TrackTrigger_cff')
+process.load('Configuration.StandardSequences.DigiToRaw_cff')
+process.load('HLTrigger.Configuration.HLT_Fake2_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+# # import of standard configurations
+# process.load('Configuration.StandardSequences.Services_cff')
+# process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+# process.load('FWCore.MessageService.MessageLogger_cfi')
+# process.load('Configuration.EventContent.EventContent_cff')
+# process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+# process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
+# process.load('Configuration.Geometry.GeometryExtended2026D41_cff')
+# process.load('Configuration.StandardSequences.MagneticField_cff')
+# process.load('Configuration.StandardSequences.Generator_cff')
+# process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC_cfi')
+# process.load('GeneratorInterface.Core.genFilterSummary_cff')
+# process.load('Configuration.StandardSequences.SimIdeal_cff')
+# process.load('Configuration.StandardSequences.EndOfProcess_cff')
+# process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+# if options.rundigi:
+#     process.load('Configuration.StandardSequences.Digi_cff')
+#     process.load('Configuration.StandardSequences.SimL1Emulator_cff')
+#     process.load('Configuration.StandardSequences.L1TrackTrigger_cff')
+#     process.load('Configuration.StandardSequences.DigiToRaw_cff')
 
 if options.debug:
     # Message logger setup
@@ -102,9 +149,10 @@ if options.debug:
     categories = [
         # 'SimG4CoreApplication',
         # 'SimG4CoreGenerator',
-        'HistoryNTupler',
-        'CaloSim',
+        # 'HistoryNTupler',
+        # 'CaloSim',
         # 'TrackInformation'
+        'DoFineCalo'
         ]
     process.MessageLogger.categories.extend(categories)
     process.MessageLogger.debugModules = categories
@@ -133,11 +181,17 @@ process.source = cms.Source(
     )
 
 # Options for saving fine hits
-process.g4SimHits.CaloSD.UseFineCaloID = cms.bool(True)
-process.g4SimHits.CaloTrkProcessing.DoFineCalo = cms.bool(True)
-process.g4SimHits.CaloTrkProcessing.EminFineTrack = cms.double(options.EminFineTrack)
-process.g4SimHits.CaloTrkProcessing.EminFinePhoton = cms.double(options.EminFinePhoton)
-process.g4SimHits.CaloTrkProcessing.SaveAllCaloSimTracks = cms.bool(options.SaveAllTracks)
+print 'dofinecalo: ' + str(cms.bool(options.dofinecalo))
+process.g4SimHits.CaloSD.DoFineCalo = cms.bool(options.dofinecalo)
+process.g4SimHits.CaloTrkProcessing.DoFineCalo = cms.bool(options.dofinecalo)
+process.g4SimHits.TrackingAction.DoFineCalo = cms.untracked.bool(options.dofinecalo)
+process.g4SimHits.CaloSD.EMinFine = cms.double(options.eminfine)
+# process.g4SimHits.CaloSD.UseFineCaloID = cms.bool(True)
+# process.g4SimHits.CaloTrkProcessing.DoFineCalo = cms.bool(True)
+# process.g4SimHits.CaloTrkProcessing.EminFineTrack = cms.double(options.EminFineTrack)
+# process.g4SimHits.CaloTrkProcessing.EminFinePhoton = cms.double(options.EminFinePhoton)
+# process.g4SimHits.CaloTrkProcessing.PutInHistoryAllTracksCalo = cms.bool(options.putInHistoryAllTracksCalo)
+# process.g4SimHits.CaloTrkProcessing.StoreAllTracksCalo = cms.bool(options.storeAllTracksCalo)
 
 process.options = cms.untracked.PSet(
     FailPath = cms.untracked.vstring(),
@@ -190,8 +244,8 @@ process.generator = cms.EDFilter("Pythia8PtGun",
         MaxEta = cms.double(2.8),
         MinPhi = cms.double(-3.14159265359),
         MaxPhi = cms.double(3.14159265359),
-        MinPt = cms.double(options.MuonPt - 0.01),
-        MaxPt = cms.double(options.MuonPt + 0.01),
+        MinPt = cms.double(options.pt - 0.01),
+        MaxPt = cms.double(options.pt + 0.01),
         ParticleID = cms.vint32(-211 if options.pion else -13),
         ),
     PythiaParameters = cms.PSet(
@@ -199,7 +253,7 @@ process.generator = cms.EDFilter("Pythia8PtGun",
         ),
     Verbosity = cms.untracked.int32(0),
     firstRun = cms.untracked.uint32(1),
-    psethack = cms.string('single {0} pt {1}'.format('pi' if options.pion else 'mu', int(options.MuonPt)))
+    psethack = cms.string('single {0} pt {1}'.format('pi' if options.pion else 'mu', int(options.pt)))
     # psethack = cms.string('single pi pt 1000')
     )
 
@@ -212,14 +266,30 @@ process.produce_calohitswithposition_step = cms.Path(process.PCaloHitWithPositio
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
+if options.rundigi:
+    process.digitisation_step = cms.Path(process.pdigi_valid)
+    process.L1simulation_step = cms.Path(process.SimL1Emulator)
+    process.L1TrackTrigger_step = cms.Path(process.L1TrackTrigger)
+    process.digi2raw_step = cms.Path(process.DigiToRaw)
 
-process.schedule = cms.Schedule(
-    process.generation_step,
-    process.genfiltersummary_step,
-    process.simulation_step,
-    process.produce_calohitswithposition_step,
-    process.endjob_step,
+steps = (
+    [
+        process.generation_step,
+        process.genfiltersummary_step,
+        process.simulation_step,
+        process.produce_calohitswithposition_step,        
+        ]
+    + ([
+        process.digitisation_step,
+        process.L1simulation_step,
+        process.L1TrackTrigger_step,
+        process.digi2raw_step,        
+        ] if options.rundigi else [])
+    + [
+        process.endjob_step
+        ]
     )
+process.schedule = cms.Schedule(*steps)
 
 if options.debug:
     process.preprocessorTagChecker = cms.EDAnalyzer("PreprocessorTagChecker")
@@ -250,7 +320,7 @@ if options.outputGEN:
     process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
     process.schedule.append(process.FEVTDEBUGoutput_step)
 
-else:
+elif not options.rundigi:
     process.HistoryNTupler = cms.EDAnalyzer(
         "HistoryNTupler",
         PCaloHitWithPositionTag = cms.InputTag("PCaloHitWithPositionProducer"),
