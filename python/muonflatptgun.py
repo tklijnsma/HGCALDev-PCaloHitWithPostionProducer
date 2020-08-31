@@ -92,17 +92,18 @@ options.parseArguments()
 # from Configuration.Eras.Era_Phase2C8_timing_layer_bar_cff import Phase2C8_timing_layer_bar
 # process = cms.Process('SIM',Phase2C8_timing_layer_bar)
 
-# from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
-# process = cms.Process('SIM',Phase2C8)
-
-from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
-process = cms.Process('SIM',Phase2C9)
+from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
+process = cms.Process('SIM',Phase2C8)
+# from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
+# process = cms.Process('SIM',Phase2C9)
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D49_cff')
+# process.load('Configuration.EventContent.EventContent_cff')
+# process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+# process.load('Configuration.Geometry.GeometryExtended2026D49_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D41_cff')
 process.load("SimGeneral.MixingModule.mixNoPU_cfi")
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
@@ -277,7 +278,7 @@ steps = (
         process.generation_step,
         process.genfiltersummary_step,
         process.simulation_step,
-        process.produce_calohitswithposition_step,        
+        # process.produce_calohitswithposition_step,        
         ]
     + ([
         process.digitisation_step,
@@ -337,7 +338,7 @@ from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 # filter all path with the production filter sequence
 for path in process.paths:
-	getattr(process,path).insert(0, process.generator)
+    getattr(process,path).insert(0, process.generator)
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
