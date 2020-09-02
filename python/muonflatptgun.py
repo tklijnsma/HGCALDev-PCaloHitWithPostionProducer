@@ -292,10 +292,10 @@ steps = (
     )
 process.schedule = cms.Schedule(*steps)
 
-if options.debug:
-    process.preprocessorTagChecker = cms.EDAnalyzer("PreprocessorTagChecker")
-    process.preprocessor_checker_step = cms.Path(process.preprocessorTagChecker)
-    process.schedule.insert(0, process.preprocessor_checker_step)
+# if options.debug:
+#     process.preprocessorTagChecker = cms.EDAnalyzer("PreprocessorTagChecker")
+#     process.preprocessor_checker_step = cms.Path(process.preprocessorTagChecker)
+#     process.schedule.insert(0, process.preprocessor_checker_step)
 
 if options.outputGEN:
     process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
