@@ -278,7 +278,7 @@ steps = (
         process.generation_step,
         process.genfiltersummary_step,
         process.simulation_step,
-        # process.produce_calohitswithposition_step,        
+        process.produce_calohitswithposition_step,        
         ]
     + ([
         process.digitisation_step,

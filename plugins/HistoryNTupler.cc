@@ -128,6 +128,13 @@ struct Tracks {
     vector<int> vertexIndex_;
     vector<int> pdgid_;
 
+    vector<bool> crossedBoundary_;
+    vector<int> idAtBoundary_;
+    vector<float> xAtBoundary_;
+    vector<float> yAtBoundary_;
+    vector<float> zAtBoundary_;
+    vector<TLorentzVector> momentumAtBoundary_;
+
     void fill(const SimTrack & track){
         x_.push_back(track.trackerSurfacePosition().X());
         y_.push_back(track.trackerSurfacePosition().Y());
@@ -138,6 +145,24 @@ struct Tracks {
         trackId_.push_back(track.trackId());
         vertexIndex_.push_back(track.vertIndex());
         pdgid_.push_back(track.type());
+
+        crossedBoundary_.push_back(track.crossedBoundary());
+        if (track.crossedBoundary()){
+            idAtBoundary_.push_back(track.getIDAtBoundary());
+            xAtBoundary_.push_back(track.getPositionAtBoundary().X());
+            yAtBoundary_.push_back(track.getPositionAtBoundary().Y());
+            zAtBoundary_.push_back(track.getPositionAtBoundary().Z());
+            momentumAtBoundary_.push_back(TLorentzVector(
+                track.getMomentumAtBoundary().Px(), track.getMomentumAtBoundary().Py(), track.getMomentumAtBoundary().Pz(), track.getMomentumAtBoundary().E()
+                ));
+            }
+        else{
+            idAtBoundary_.push_back(-1);
+            xAtBoundary_.push_back(-1);
+            yAtBoundary_.push_back(-1);
+            zAtBoundary_.push_back(-1);
+            momentumAtBoundary_.push_back(TLorentzVector(0,0,0,0));
+            }
         }
 
     void linkToTree(TTree* tree, std::string name){
@@ -148,6 +173,13 @@ struct Tracks {
         tree->Branch((name + "_trackId").c_str(), "vector<int>", &trackId_, 32000, 0);
         tree->Branch((name + "_vertexIndex").c_str(), "vector<int>", &vertexIndex_, 32000, 0);
         tree->Branch((name + "_pdgid").c_str(), "vector<int>", &pdgid_, 32000, 0);
+
+        tree->Branch((name + "_crossedBoundary").c_str(), "vector<bool>", &crossedBoundary_, 32000, 0);
+        tree->Branch((name + "_idAtBoundary").c_str(), "vector<int>", &idAtBoundary_, 32000, 0);
+        tree->Branch((name + "_xAtBoundary").c_str(), "vector<float>", &xAtBoundary_, 32000, 0);
+        tree->Branch((name + "_yAtBoundary").c_str(), "vector<float>", &yAtBoundary_, 32000, 0);
+        tree->Branch((name + "_zAtBoundary").c_str(), "vector<float>", &zAtBoundary_, 32000, 0);
+        tree->Branch((name + "_momentumAtBoundary").c_str(), "vector<TLorentzVector>", &momentumAtBoundary_, 32000, 0);
         }
     };
 
