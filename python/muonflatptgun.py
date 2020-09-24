@@ -57,11 +57,11 @@ options.register(
     "If set to True, prints LogDebug and LogWarning for a few packages"
     )
 options.register(
-    'pion',
-    False,
+    'pdgid',
+    -13,
     VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    "If set to True, does a pion instead of a muon"
+    VarParsing.varType.int,
+    "pdgid of primary particle, default muon"
     )
 options.register(
     'storeAllTracksCalo',
@@ -84,10 +84,22 @@ options.register(
     VarParsing.varType.bool,
     "Flag to control whether to run the digi steps"
     )
-options.outputFile = 'test.root'
+options.outputFile = 'default.root'
 options.maxEvents = 1
 options.parseArguments()
 
+from time import strftime
+if options.outputFile.startswith('default'):
+    options.outputFile = options.outputFile.replace(
+        'default',
+        'event{seed}_pdgid{pdgid}_{pt}GeV_{date}_{finecalo}'.format(
+            seed = options.seed,
+            pdgid = abs(options.pdgid),
+            pt = int(options.pt),
+            date = strftime('%b%d'),
+            finecalo = 'finecalo' if options.dofinecalo else 'nofine'
+            )
+        )
 
 # from Configuration.Eras.Era_Phase2C8_timing_layer_bar_cff import Phase2C8_timing_layer_bar
 # process = cms.Process('SIM',Phase2C8_timing_layer_bar)
@@ -247,14 +259,14 @@ process.generator = cms.EDFilter("Pythia8PtGun",
         MaxPhi = cms.double(3.14159265359),
         MinPt = cms.double(options.pt - 0.01),
         MaxPt = cms.double(options.pt + 0.01),
-        ParticleID = cms.vint32(-211 if options.pion else -13),
+        ParticleID = cms.vint32(options.pdgid),
         ),
     PythiaParameters = cms.PSet(
         parameterSets = cms.vstring()
         ),
     Verbosity = cms.untracked.int32(0),
     firstRun = cms.untracked.uint32(1),
-    psethack = cms.string('single {0} pt {1}'.format('pi' if options.pion else 'mu', int(options.pt)))
+    psethack = cms.string('single {0} pt {1}'.format(options.pdgid, int(options.pt)))
     # psethack = cms.string('single pi pt 1000')
     )
 
