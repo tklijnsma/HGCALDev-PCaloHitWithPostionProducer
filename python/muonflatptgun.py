@@ -248,27 +248,67 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T14', '')
 
 
-process.generator = cms.EDFilter("Pythia8PtGun",
-    PGunParameters = cms.PSet(
-        AddAntiParticle = cms.bool(True),
-        # MinEta = cms.double(-2.5),
-        # MaxEta = cms.double(2.5),
-        MinEta = cms.double(1.6),
-        MaxEta = cms.double(2.8),
-        MinPhi = cms.double(-3.14159265359),
-        MaxPhi = cms.double(3.14159265359),
-        MinPt = cms.double(options.pt - 0.01),
-        MaxPt = cms.double(options.pt + 0.01),
-        ParticleID = cms.vint32(options.pdgid),
-        ),
-    PythiaParameters = cms.PSet(
-        parameterSets = cms.vstring()
-        ),
-    Verbosity = cms.untracked.int32(0),
-    firstRun = cms.untracked.uint32(1),
-    psethack = cms.string('single {0} pt {1}'.format(options.pdgid, int(options.pt)))
-    # psethack = cms.string('single pi pt 1000')
-    )
+if abs(options.pdgid) == 6:
+    # ttbar
+    process.generator = cms.EDFilter("Pythia8GeneratorFilter",
+        PythiaParameters = cms.PSet(
+            parameterSets = cms.vstring(
+                'pythia8CommonSettings', 
+                'pythia8CUEP8M1Settings', 
+                'processParameters'
+                ),
+            processParameters = cms.vstring(
+                'Top:gg2ttbar = on ', 
+                'Top:qqbar2ttbar = on ', 
+                '6:m0 = 175 '
+                ),
+            pythia8CUEP8M1Settings = cms.vstring(
+                'Tune:pp 14', 
+                'Tune:ee 7', 
+                'MultipartonInteractions:pT0Ref=2.4024', 
+                'MultipartonInteractions:ecmPow=0.25208', 
+                'MultipartonInteractions:expPow=1.6'
+                ),
+            pythia8CommonSettings = cms.vstring(
+                'Tune:preferLHAPDF = 2', 
+                'Main:timesAllowErrors = 10000', 
+                'Check:epTolErr = 0.01', 
+                'Beams:setProductionScalesFromLHEF = off', 
+                'SLHA:keepSM = on', 
+                'SLHA:minMassSM = 1000.', 
+                'ParticleDecays:limitTau0 = on', 
+                'ParticleDecays:tau0Max = 10', 
+                'ParticleDecays:allowPhotonRadiation = on'
+                )
+            ),
+        comEnergy = cms.double(13000.0),
+        filterEfficiency = cms.untracked.double(1.0),
+        maxEventsToPrint = cms.untracked.int32(0),
+        pythiaHepMCVerbosity = cms.untracked.bool(False),
+        pythiaPylistVerbosity = cms.untracked.int32(0)
+        )
+else:
+    process.generator = cms.EDFilter("Pythia8PtGun",
+        PGunParameters = cms.PSet(
+            AddAntiParticle = cms.bool(True),
+            # MinEta = cms.double(-2.5),
+            # MaxEta = cms.double(2.5),
+            MinEta = cms.double(1.6),
+            MaxEta = cms.double(2.8),
+            MinPhi = cms.double(-3.14159265359),
+            MaxPhi = cms.double(3.14159265359),
+            MinPt = cms.double(options.pt - 0.01),
+            MaxPt = cms.double(options.pt + 0.01),
+            ParticleID = cms.vint32(options.pdgid),
+            ),
+        PythiaParameters = cms.PSet(
+            parameterSets = cms.vstring()
+            ),
+        Verbosity = cms.untracked.int32(0),
+        firstRun = cms.untracked.uint32(1),
+        psethack = cms.string('single {0} pt {1}'.format(options.pdgid, int(options.pt)))
+        # psethack = cms.string('single pi pt 1000')
+        )
 
 process.PCaloHitWithPositionProducer = cms.EDProducer("PCaloHitWithPositionProducer")
 
