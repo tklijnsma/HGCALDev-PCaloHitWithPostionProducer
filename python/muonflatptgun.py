@@ -104,18 +104,25 @@ if options.outputFile.startswith('default'):
 # from Configuration.Eras.Era_Phase2C8_timing_layer_bar_cff import Phase2C8_timing_layer_bar
 # process = cms.Process('SIM',Phase2C8_timing_layer_bar)
 
-from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
-process = cms.Process('SIM',Phase2C8)
+# from Configuration.Eras.Era_Phase2C8_cff import Phase2C8
+# process = cms.Process('SIM',Phase2C8)
+from Configuration.Eras.Era_Phase2C11_cff import Phase2C11
+process = cms.Process('SIM',Phase2C11)
 # from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
 # process = cms.Process('SIM',Phase2C9)
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
+# Geometry
 # process.load('Configuration.EventContent.EventContent_cff')
 # process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 # process.load('Configuration.Geometry.GeometryExtended2026D49_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D41_cff')
+# 
+# process.load('Configuration.Geometry.GeometryExtended2026D41Reco_cff')
+# process.load('Configuration.Geometry.GeometryExtended2026D41_cff')
+process.load("Configuration.Geometry.GeometryExtended2026D71_cff")
+process.load('Configuration.Geometry.GeometryExtended2026D71Reco_cff')
+# 
 process.load("SimGeneral.MixingModule.mixNoPU_cfi")
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
@@ -244,9 +251,11 @@ process.configurationMetadata = cms.untracked.PSet(
 
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T14', '')
 
+# from Configuration.AlCa.GlobalTag import GlobalTag
+# process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T14', '')
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag = autoCond['phase2_realistic']
 
 if abs(options.pdgid) == 6:
     # ttbar
@@ -310,79 +319,37 @@ else:
         # psethack = cms.string('single pi pt 1000')
         )
 
-process.PCaloHitWithPositionProducer = cms.EDProducer("PCaloHitWithPositionProducer")
-
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
 process.simulation_step = cms.Path(process.psim)
-process.produce_calohitswithposition_step = cms.Path(process.PCaloHitWithPositionProducer)
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.endjob_step = cms.EndPath(process.endOfProcess)
+
+schedule = [
+    process.generation_step,
+    process.genfiltersummary_step,
+    process.simulation_step
+    ]
 
 if options.rundigi:
     process.digitisation_step = cms.Path(process.pdigi_valid)
     process.L1simulation_step = cms.Path(process.SimL1Emulator)
     process.L1TrackTrigger_step = cms.Path(process.L1TrackTrigger)
     process.digi2raw_step = cms.Path(process.DigiToRaw)
-
-steps = (
-    [
-        process.generation_step,
-        process.genfiltersummary_step,
-        process.simulation_step,
-        process.produce_calohitswithposition_step,        
-        ]
-    + ([
+    schedule.extend([
         process.digitisation_step,
         process.L1simulation_step,
         process.L1TrackTrigger_step,
         process.digi2raw_step,        
-        ] if options.rundigi else [])
-    + [
-        process.endjob_step
-        ]
-    )
-process.schedule = cms.Schedule(*steps)
-
-# if options.debug:
-#     process.preprocessorTagChecker = cms.EDAnalyzer("PreprocessorTagChecker")
-#     process.preprocessor_checker_step = cms.Path(process.preprocessorTagChecker)
-#     process.schedule.insert(0, process.preprocessor_checker_step)
-
-if options.outputGEN:
-    process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
-        SelectEvents = cms.untracked.PSet(
-            SelectEvents = cms.vstring('generation_step')
-            # SelectEvents = cms.vstring('produce_calohitswithposition_step')
-            ),
-        dataset = cms.untracked.PSet(
-            dataTier = cms.untracked.string('GEN-SIM'),
-            filterName = cms.untracked.string('')
-            ),
-        fileName = cms.untracked.string(options.outputFile),
-        outputCommands = process.FEVTDEBUGEventContent.outputCommands,
-        splitLevel = cms.untracked.int32(0)
-        )
-    process.FEVTDEBUGoutput.outputCommands.extend([
-        'keep *_PCaloHitWithPositionProducer_*_*',
-        'keep SimTracks_*_*_*',
-        'keep SimVertexs_*_*_*',
-        'keep *_genParticles_*_*',
-        'keep recoGenMETs_*_*_*',
         ])
-    process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
-    process.schedule.append(process.FEVTDEBUGoutput_step)
-
-elif not options.rundigi:
-    process.HistoryNTupler = cms.EDAnalyzer(
-        "HistoryNTupler",
-        PCaloHitWithPositionTag = cms.InputTag("PCaloHitWithPositionProducer"),
-        )
+    # No output if running digi at the moment
+else:
+    process.HistoryNTupler = cms.EDAnalyzer('HistoryNTupler')
     process.ntuple_step = cms.Path(process.HistoryNTupler)
-    process.schedule.insert(
-        process.schedule.index(process.produce_calohitswithposition_step) + 1, process.ntuple_step
-        )
+    schedule.append(process.ntuple_step)
 
+schedule.append(process.endjob_step)
+process.schedule = cms.Schedule(*schedule)
 print 'Final process.schedule:'
 print process.schedule
 

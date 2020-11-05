@@ -3,7 +3,12 @@
 <use name="FWCore/ParameterSet"/>
 <use name="FWCore/Utilities"/>
 <use name="FWCore/ServiceRegistry"/>
-<use name="RecoLocalCalo/HGCalRecAlgos"/>
-<use name="DataFormats/HGCALHistoryFormats"/>
 <use name="SimDataFormats/CaloHit"/>
+<use name="DataFormats/ForwardDetId"/>
+<use name="Geometry/HGCalGeometry"/>
+<use name="DataFormats/HGCRecHit"/>
+<use name="Geometry/CaloGeometry"/>
+<use name="Geometry/Records"/>
+<use name="RecoLocalCalo/HGCalRecAlgos"/>
+<use name="CommonTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>

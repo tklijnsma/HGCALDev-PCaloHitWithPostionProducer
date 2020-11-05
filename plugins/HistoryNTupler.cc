@@ -139,6 +139,11 @@ struct Hits{
             cell_.push_back(hgcalRecHitToolInstance->getCell(id));
             radiusToSide_.push_back(hgcalRecHitToolInstance->getRadiusToSide(id));
             }
+        else{
+            wafer_.push_back(std::pair<int, int>(-1, -1));
+            cell_.push_back(std::pair<int, int>(-1, -1));
+            radiusToSide_.push_back(-1.);
+            }
 
         energy_.push_back(hit.energy());
         emFraction_.push_back(hit.energyEM() / hit.energy());
@@ -341,7 +346,6 @@ void HistoryNTupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 void HistoryNTupler::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
-    desc.add<edm::InputTag>("PCaloHitWithPositionTag");
     desc.add<edm::InputTag>("SimTrackTag", edm::InputTag("g4SimHits"));
     desc.add<edm::InputTag>("SimVertexTag", edm::InputTag("g4SimHits"));
     descriptions.add("HistoryNTupler", desc);
