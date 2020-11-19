@@ -168,7 +168,7 @@ struct Tracks {
     vector<float> yAtBoundary_;
     vector<float> zAtBoundary_;
     vector<TLorentzVector> momentumAtBoundary_;
-    vector<TLorentzVector> correctedMomentumAtBoundary_;
+    // vector<TLorentzVector> correctedMomentumAtBoundary_;
 
     void fill(const SimTrack & track){
         x_.push_back(track.trackerSurfacePosition().X());
@@ -190,10 +190,10 @@ struct Tracks {
             momentumAtBoundary_.push_back(TLorentzVector(
                 track.getMomentumAtBoundary().Px(), track.getMomentumAtBoundary().Py(), track.getMomentumAtBoundary().Pz(), track.getMomentumAtBoundary().E()
                 ));
-            correctedMomentumAtBoundary_.push_back(TLorentzVector(
-                track.getCorrectedMomentumAtBoundary().Px(), track.getCorrectedMomentumAtBoundary().Py(),
-                track.getCorrectedMomentumAtBoundary().Pz(), track.getCorrectedMomentumAtBoundary().E()
-                ));
+            // correctedMomentumAtBoundary_.push_back(TLorentzVector(
+            //     track.getCorrectedMomentumAtBoundary().Px(), track.getCorrectedMomentumAtBoundary().Py(),
+            //     track.getCorrectedMomentumAtBoundary().Pz(), track.getCorrectedMomentumAtBoundary().E()
+            //     ));
             }
         else{
             idAtBoundary_.push_back(-1);
@@ -201,7 +201,7 @@ struct Tracks {
             yAtBoundary_.push_back(-1);
             zAtBoundary_.push_back(-1);
             momentumAtBoundary_.push_back(TLorentzVector(0,0,0,0));
-            correctedMomentumAtBoundary_.push_back(TLorentzVector(0,0,0,0));
+            // correctedMomentumAtBoundary_.push_back(TLorentzVector(0,0,0,0));
             }
         }
 
@@ -219,7 +219,7 @@ struct Tracks {
         tree->Branch((name + "_yAtBoundary").c_str(), "vector<float>", &yAtBoundary_, 32000, 0);
         tree->Branch((name + "_zAtBoundary").c_str(), "vector<float>", &zAtBoundary_, 32000, 0);
         tree->Branch((name + "_momentumAtBoundary").c_str(), "vector<TLorentzVector>", &momentumAtBoundary_, 32000, 0);
-        tree->Branch((name + "_correctedMomentumAtBoundary").c_str(), "vector<TLorentzVector>", &correctedMomentumAtBoundary_, 32000, 0);
+        // tree->Branch((name + "_correctedMomentumAtBoundary").c_str(), "vector<TLorentzVector>", &correctedMomentumAtBoundary_, 32000, 0);
         }
     };
 
